@@ -1,6 +1,7 @@
 using Nager.Date.Extensions;
 using Nager.Date.Helpers;
 using Nager.Date.Models;
+using Nager.Date.ReligiousProviders;
 using System;
 using System.Collections.Generic;
 
@@ -11,11 +12,16 @@ namespace Nager.Date.HolidayProviders
     /// </summary>
     internal sealed class MexicoHolidayProvider : AbstractHolidayProvider
     {
+        private readonly ICatholicProvider _catholicProvider;
+
         /// <summary>
         /// Mexico HolidayProvider
         /// </summary>
-        public MexicoHolidayProvider() : base(CountryCode.MX)
+        /// <param name="catholicProvider"></param>
+        public MexicoHolidayProvider(
+            ICatholicProvider catholicProvider) : base(CountryCode.MX)
         {
+            this._catholicProvider = catholicProvider;
         }
 
         /// <inheritdoc/>
@@ -26,10 +32,6 @@ namespace Nager.Date.HolidayProviders
             var firstMondayOfFebruary = DateHelper.FindDay(year, Month.February, DayOfWeek.Monday, Occurrence.First);
             var thirdMondayOfMarch = DateHelper.FindDay(year, Month.March, DayOfWeek.Monday, Occurrence.Third);
             var thirdMondayOfNovember = DateHelper.FindDay(year, Month.November, DayOfWeek.Monday, Occurrence.Third);
-
-            //var newYearDay = new DateTime(year, 1, 1).Shift(saturday => saturday.AddDays(-1), sunday => sunday.AddDays(1));
-            //var laborDay = new DateTime(year, 5, 1).Shift(saturday => saturday.AddDays(-1), sunday => sunday.AddDays(1));
-            //var independenceDay = new DateTime(year, 9, 16).Shift(saturday => saturday.AddDays(-1), sunday => sunday.AddDays(1));
 
             var observedRuleSet = new ObservedRuleSet
             {
@@ -89,23 +91,14 @@ namespace Nager.Date.HolidayProviders
                     EnglishName = "Christmas Day",
                     LocalName = "Navidad",
                     HolidayTypes = HolidayTypes.Public
-                }
+                },
+                this._catholicProvider.MaundyThursday("Jueves Santo", year).SetHolidayTypes(HolidayTypes.Authorities | HolidayTypes.Bank | HolidayTypes.School),
+                this._catholicProvider.GoodFriday("Viernes Santo", year).SetHolidayTypes(HolidayTypes.Authorities | HolidayTypes.Bank | HolidayTypes.School)
             };
 
             holidaySpecifications.AddIfNotNull(this.InaugurationDay(year));
 
             return holidaySpecifications;
-
-            //var items = new List<Holiday>();
-            //items.Add(new Holiday(newYearDay, "Año Nuevo", "New Year's Day", countryCode));
-            //items.Add(new Holiday(firstMondayOfFebruary, "Día de la Constitución", "Constitution Day", countryCode));
-            //items.Add(new Holiday(thirdMondayOfMarch, "Natalicio de Benito Juárez", "Benito Juárez's birthday", countryCode));
-            //items.Add(new Holiday(laborDay, "Día del Trabajo", "Labor Day", countryCode));
-            //items.Add(new Holiday(independenceDay, "Día de la Independencia", "Independence Day", countryCode));
-            //items.Add(new Holiday(thirdMondayOfNovember, "Día de la Revolución", "Revolution Day", countryCode));
-            //items.Add(new Holiday(year, 12, 25, "Navidad", "Christmas Day", countryCode));
-            //items.AddIfNotNull(this.InaugurationDay(year, countryCode));
-            //return items.OrderBy(o => o.Date);
         }
 
         private HolidaySpecification InaugurationDay(int year)
@@ -137,8 +130,6 @@ namespace Nager.Date.HolidayProviders
                         LocalName = "Transmisión del Poder Ejecutivo Federal",
                         HolidayTypes = HolidayTypes.Public
                     };
-
-                    //return new Holiday(year, 12, 1, "Transmisión del Poder Ejecutivo Federal", "Inauguration Day", countryCode);
                 case 2024:
                 case 2030:
                 case 2036:
@@ -156,8 +147,6 @@ namespace Nager.Date.HolidayProviders
                         LocalName = "Transmisión del Poder Ejecutivo Federal",
                         HolidayTypes = HolidayTypes.Public
                     };
-
-                    //return new Holiday(year, 10, 1, "Transmisión del Poder Ejecutivo Federal", "Inauguration Day", countryCode);
             }
 
             return null;
