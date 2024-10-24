@@ -190,6 +190,7 @@ namespace Nager.Date.HolidayProviders
             holidaySpecifications.AddRangeIfNotNull(this.LabourDay(year));
             holidaySpecifications.AddRangeIfNotNull(this.MonarchBirthday(year));
             holidaySpecifications.AddIfNotNull(this.MourningForQueenElizabeth(year));
+            holidaySpecifications.AddIfNotNull(this.FridayBeforeTheAflGrandFinal(year));
 
             return holidaySpecifications;
         }
@@ -266,7 +267,9 @@ namespace Nager.Date.HolidayProviders
             }
 
             var secondMondayInJune = DateHelper.FindDay(year, Month.June, DayOfWeek.Monday, Occurrence.Second);
+            var fourthMondayInSeptember = DateHelper.FindDay(year, Month.September, DayOfWeek.Monday, Occurrence.Fourth);
             var firstMondayInOctober = DateHelper.FindDay(year, Month.October, DayOfWeek.Monday, Occurrence.First);
+            
 
             return
             [
@@ -280,6 +283,14 @@ namespace Nager.Date.HolidayProviders
                 },
                 new HolidaySpecification
                 {
+                    Date = fourthMondayInSeptember,
+                    EnglishName = name,
+                    LocalName = name,
+                    HolidayTypes = HolidayTypes.Public,
+                    SubdivisionCodes = ["AU-WA"]
+                },
+                new HolidaySpecification
+                {
                     Date = firstMondayInOctober,
                     EnglishName = name,
                     LocalName = name,
@@ -289,7 +300,7 @@ namespace Nager.Date.HolidayProviders
             ];
         }
 
-        private HolidaySpecification MourningForQueenElizabeth(int year)
+        private HolidaySpecification? MourningForQueenElizabeth(int year)
         {
             if (year == 2022)
             {
@@ -302,6 +313,68 @@ namespace Nager.Date.HolidayProviders
                     EnglishName = "National Day of Mourning",
                     LocalName = "National Day of Mourning",
                     HolidayTypes = HolidayTypes.Public
+                };
+            }
+
+            return null;
+        }
+
+        private HolidaySpecification? FridayBeforeTheAflGrandFinal(int year)
+        {
+            var holidayName = "Friday before AFL Grand Final";
+            var subdivisionCodes = new string[] { "AU-VIC" };
+
+            switch (year)
+            {
+                case 2016:
+                case 2017:
+                case 2018:
+                case 2019:
+                case 2021:
+                case 2023:
+                    {
+                        var lastFridayInSeptember = DateHelper.FindLastDay(year, Month.September, DayOfWeek.Friday);
+
+                        return new HolidaySpecification
+                        {
+                            Date = lastFridayInSeptember,
+                            EnglishName = holidayName,
+                            LocalName = holidayName,
+                            HolidayTypes = HolidayTypes.Public,
+                            SubdivisionCodes = subdivisionCodes
+                        };
+                    }
+                case 2020:
+                    return new HolidaySpecification
+                    {
+                        Date = new DateTime(year, 10 , 23),
+                        EnglishName = holidayName,
+                        LocalName = holidayName,
+                        HolidayTypes = HolidayTypes.Public,
+                        SubdivisionCodes = subdivisionCodes
+                    };
+                case 2022:
+                    return new HolidaySpecification
+                    {
+                        Date = new DateTime(year, 09, 23),
+                        EnglishName = holidayName,
+                        LocalName = holidayName,
+                        HolidayTypes = HolidayTypes.Public,
+                        SubdivisionCodes = subdivisionCodes
+                    };
+            }
+
+            if (year > DateTime.Today.Year)
+            {
+                var tentativeDate = DateHelper.FindLastDay(year, Month.September, DayOfWeek.Friday);
+
+                return new HolidaySpecification
+                {
+                    Date = tentativeDate,
+                    EnglishName = $"{holidayName} (Tentative Date)",
+                    LocalName = $"{holidayName} (Tentative Date)",
+                    HolidayTypes = HolidayTypes.Public,
+                    SubdivisionCodes = subdivisionCodes
                 };
             }
 

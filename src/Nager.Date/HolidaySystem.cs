@@ -2,11 +2,9 @@ using Nager.Date.Helpers;
 using Nager.Date.HolidayProviders;
 using Nager.Date.Models;
 using Nager.Date.ReligiousProviders;
-using Nager.LicenseSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Nager.Date
 {
@@ -27,6 +25,7 @@ namespace Nager.Date
                 { CountryCode.AL, new Lazy<IHolidayProvider>(() => new AlbaniaHolidayProvider(_catholicProvider, _orthodoxProvider))},
                 { CountryCode.AM, new Lazy<IHolidayProvider>(() => new ArmeniaHolidayProvider(_catholicProvider))},
                 { CountryCode.AR, new Lazy<IHolidayProvider>(() => new ArgentinaHolidayProvider(_catholicProvider))},
+                { CountryCode.AQ, new Lazy<IHolidayProvider>(() => new AntarcticaHolidayProvider())},
                 { CountryCode.AT, new Lazy<IHolidayProvider>(() => new AustriaHolidayProvider(_catholicProvider))},
                 { CountryCode.AU, new Lazy<IHolidayProvider>(() => new AustraliaHolidayProvider(_catholicProvider))},
                 { CountryCode.AX, new Lazy<IHolidayProvider>(() => new AlandHolidayProvider(_catholicProvider))},
@@ -38,6 +37,7 @@ namespace Nager.Date
                 { CountryCode.BO, new Lazy<IHolidayProvider>(() => new BoliviaHolidayProvider(_catholicProvider))},
                 { CountryCode.BR, new Lazy<IHolidayProvider>(() => new BrazilHolidayProvider(_catholicProvider))},
                 { CountryCode.BS, new Lazy<IHolidayProvider>(() => new BahamasHolidayProvider(_catholicProvider))},
+                { CountryCode.BV, new Lazy<IHolidayProvider>(() => new BouvetIslandHolidayProvider())},
                 { CountryCode.BW, new Lazy<IHolidayProvider>(() => new BotswanaHolidayProvider(_catholicProvider))},
                 { CountryCode.BY, new Lazy<IHolidayProvider>(() => new BelarusHolidayProvider(_orthodoxProvider))},
                 { CountryCode.BZ, new Lazy<IHolidayProvider>(() => new BelizeHolidayProvider(_catholicProvider))},
@@ -68,10 +68,12 @@ namespace Nager.Date
                 { CountryCode.GL, new Lazy<IHolidayProvider>(() => new GreenlandHolidayProvider(_catholicProvider))},
                 { CountryCode.GM, new Lazy<IHolidayProvider>(() => new GambiaHolidayProvider(_catholicProvider))},
                 { CountryCode.GR, new Lazy<IHolidayProvider>(() => new GreeceHolidayProvider(_orthodoxProvider))},
+                { CountryCode.GS, new Lazy<IHolidayProvider>(() => new SouthGeorgiaHolidayProvider())},
                 { CountryCode.GT, new Lazy<IHolidayProvider>(() => new GuatemalaHolidayProvider(_catholicProvider))},
                 { CountryCode.GG, new Lazy<IHolidayProvider>(() => new GuernseyHolidayProvider(_catholicProvider))},
                 { CountryCode.GY, new Lazy<IHolidayProvider>(() => new GuyanaHolidayProvider(_catholicProvider))},
                 { CountryCode.HK, new Lazy<IHolidayProvider>(() => new HongKongHolidayProvider(_catholicProvider))},
+                { CountryCode.HM, new Lazy<IHolidayProvider>(() => new HeardIslandAndMcDonaldIslandsHolidayProvider())},
                 { CountryCode.HN, new Lazy<IHolidayProvider>(() => new HondurasHolidayProvider(_catholicProvider))},
                 { CountryCode.HR, new Lazy<IHolidayProvider>(() => new CroatiaHolidayProvider(_catholicProvider))},
                 { CountryCode.HT, new Lazy<IHolidayProvider>(() => new HaitiHolidayProvider(_catholicProvider))},
@@ -127,6 +129,7 @@ namespace Nager.Date
                 { CountryCode.SM, new Lazy<IHolidayProvider>(() => new SanMarinoHolidayProvider(_catholicProvider))},
                 { CountryCode.SR, new Lazy<IHolidayProvider>(() => new SurinameHolidayProvider(_catholicProvider))},
                 { CountryCode.SV, new Lazy<IHolidayProvider>(() => new ElSalvadorHolidayProvider(_catholicProvider))},
+                { CountryCode.TF, new Lazy<IHolidayProvider>(() => new FrenchSouthernAndAntarcticLandsHolidayProvider())},
                 { CountryCode.TN, new Lazy<IHolidayProvider>(() => new TunisiaHolidayProvider())},
                 { CountryCode.TR, new Lazy<IHolidayProvider>(() => new TurkeyHolidayProvider())},
                 { CountryCode.UA, new Lazy<IHolidayProvider>(() => new UkraineHolidayProvider(_orthodoxProvider))},
@@ -141,7 +144,7 @@ namespace Nager.Date
                 { CountryCode.ZW, new Lazy<IHolidayProvider>(() => new ZimbabweHolidayProvider(_catholicProvider))}
             };
 
-        private static bool? _licenseValid;
+        private static LicenseCheckStatus _licenseCheckStatus = LicenseCheckStatus.NotChecked;
 
         /// <summary>
         /// License Key
@@ -149,30 +152,30 @@ namespace Nager.Date
         /// <remarks>
         /// As a GitHub sponsor of <see href="https://github.com/nager">nager</see>, you will receive a <see href="https://github.com/sponsors/nager">license key</see>
         /// </remarks>
-        public static string LicenseKey = null;
+        public static string? LicenseKey = null;
 
-        private static void CheckLicense(string licenseKey)
+        private static void CheckLicense(string? licenseKey)
         {
             if (string.IsNullOrEmpty(licenseKey))
             {
-                _licenseValid = false;
-                throw new LicenseKeyException("No LicenseKey");
+                _licenseCheckStatus = LicenseCheckStatus.NotConfigured;
+                return;
             }
 
             var licenseInfo = LicenseHelper.CheckLicenseKey(licenseKey);
             if (licenseInfo is null)
             {
-                _licenseValid = false;
-                throw new LicenseKeyException("Invalid LicenseKey");
+                _licenseCheckStatus = LicenseCheckStatus.Invalid;
+                return;
             }
 
             if (licenseInfo.ValidUntil < DateTime.Today)
             {
-                _licenseValid = false;
-                throw new LicenseKeyException("Expried LicenseKey");
+                _licenseCheckStatus = LicenseCheckStatus.Expired;
+                return;
             }
 
-            _licenseValid = true;
+            _licenseCheckStatus = LicenseCheckStatus.Valid;
         }
 
         /// <summary>
@@ -211,15 +214,23 @@ namespace Nager.Date
         /// <returns></returns>
         public static bool TryGetHolidayProvider(CountryCode countryCode, out IHolidayProvider holidayProvider)
         {
-            if (_licenseValid is null)
+            if (_licenseCheckStatus == LicenseCheckStatus.NotChecked)
             {
                 CheckLicense(LicenseKey);
             }
 
-            if (!_licenseValid.Value)
+            switch (_licenseCheckStatus)
             {
-                holidayProvider = NoHolidaysHolidayProvider.Instance;
-                return false;
+                case LicenseCheckStatus.Valid:
+                    break;
+                case LicenseCheckStatus.NotConfigured:
+                    throw new LicenseKeyException("No LicenseKey");
+                case LicenseCheckStatus.Invalid:
+                    throw new LicenseKeyException("Invalid LicenseKey");
+                case LicenseCheckStatus.Expired:
+                    throw new LicenseKeyException("Expired LicenseKey");
+                default:
+                    throw new LicenseKeyException("Unknown LicenseKey Check Status");
             }
 
             if (_holidaysProviders.TryGetValue(countryCode, out var provider))
@@ -342,7 +353,7 @@ namespace Nager.Date
         private static Func<Holiday, bool> GetHolidayFilter(
             DateTime date,
             HolidayTypes holidayTypes,
-            string subdivisionCodes = null)
+            string? subdivisionCodes = null)
         {
             return o => o.ObservedDate == date.Date
                         && (o.SubdivisionCodes is null || subdivisionCodes is not null && o.SubdivisionCodes.Contains(subdivisionCodes))

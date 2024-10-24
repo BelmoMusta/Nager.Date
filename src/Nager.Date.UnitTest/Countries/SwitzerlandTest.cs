@@ -1,24 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nager.Date.Extensions;
 using System;
-using System.Linq;
 
 namespace Nager.Date.UnitTest.Countries
 {
     [TestClass]
     public class SwitzerlandTest
     {
-        [Ignore]
-        [TestMethod]
-        public void TestSwitzerland()
-        {
-            for (var year = DateTime.Now.Year; year < 3000; year++)
-            {
-                var publicHolidays = HolidaySystem.GetHolidays(year, CountryCode.CH);
-                Assert.AreEqual(16, publicHolidays.Count());
-            }
-        }
-
         [DataTestMethod]
         [DataRow(2018, 10, 8, false)]
         [DataRow(2018, 10, 9, false)]

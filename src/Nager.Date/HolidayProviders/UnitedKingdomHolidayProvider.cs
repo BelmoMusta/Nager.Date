@@ -68,24 +68,7 @@ namespace Nager.Date.HolidayProviders
                     EnglishName = "New Year's Day",
                     LocalName = "New Year's Day",
                     HolidayTypes = HolidayTypes.Public,
-                    SubdivisionCodes = ["GB-NIR"]
-                },
-                new HolidaySpecification
-                {
-                    Date = new DateTime(year, 1, 1),
-                    EnglishName = "New Year's Day",
-                    LocalName = "New Year's Day",
-                    HolidayTypes = HolidayTypes.Public,
-                    SubdivisionCodes = ["GB-ENG", "GB-WLS"],
-                    ObservedRuleSet = mondayObservedRuleSet
-                },
-                new HolidaySpecification
-                {
-                    Date = new DateTime(year, 1, 1),
-                    EnglishName = "New Year's Day",
-                    LocalName = "New Year's Day",
-                    HolidayTypes = HolidayTypes.Public,
-                    SubdivisionCodes = ["GB-SCT"],
+                    SubdivisionCodes = ["GB-ENG", "GB-NIR", "GB-SCT", "GB-WLS"],
                     ObservedRuleSet = mondayObservedRuleSet
                 },
                 new HolidaySpecification
@@ -199,7 +182,7 @@ namespace Nager.Date.HolidayProviders
 
         #region Royal family
 
-        private HolidaySpecification QueensPlatinumJubilee(int year)
+        private HolidaySpecification? QueensPlatinumJubilee(int year)
         {
             if (year == 2022)
             {
@@ -217,7 +200,7 @@ namespace Nager.Date.HolidayProviders
             return null;
         }
 
-        private HolidaySpecification QueensStateFuneral(int year)
+        private HolidaySpecification? QueensStateFuneral(int year)
         {
             if (year == 2022)
             {
@@ -235,7 +218,7 @@ namespace Nager.Date.HolidayProviders
             return null;
         }
 
-        private HolidaySpecification CoronationBankHoliday(int year)
+        private HolidaySpecification? CoronationBankHoliday(int year)
         {
             if (year == 2023)
             {
@@ -260,9 +243,21 @@ namespace Nager.Date.HolidayProviders
         {
             var holidayName = "Early May Bank Holiday";
 
-            if (year == 2020)
+            if (year == 1995)
             {
-                //https://www.bbc.co.uk/news/uk-48565417
+                // Shifted to mark the 50th anniversary of VE Day
+                return new HolidaySpecification
+                {
+                    Date = new DateTime(year, 5, 8),
+                    EnglishName = holidayName,
+                    LocalName = holidayName,
+                    HolidayTypes = HolidayTypes.Public
+                };
+            }
+            else if (year == 2020)
+            {
+                // Shifted to mark the 75th anniversary of VE Day
+                // https://www.bbc.co.uk/news/uk-48565417
                 var secondFridayInMay = DateHelper.FindDay(year, Month.May, DayOfWeek.Friday, Occurrence.Second);
 
                 return new HolidaySpecification
